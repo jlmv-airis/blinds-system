@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Blindsystem MVP — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
@@ -11,22 +14,37 @@
     <aside class="sidebar">
       <div class="brand">Blindsystem</div>
       <nav>
-        <a href="#" data-view="home" class="nav-link active">Dashboard</a>
-        <a href="#" data-view="clients" class="nav-link">Clientes</a>
-        <a href="#" data-view="products" class="nav-link">Productos</a>
+        <a href="#" data-view="home" data-title="Dashboard" class="nav-link active">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a href="#" data-view="clients" data-title="Clientes" class="nav-link">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Clientes
+        </a>
+        <a href="#" data-view="products" data-title="Productos" class="nav-link">
+          <svg class="icon" viewBox="0 0 24 24"><path d="m21 8-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+          Productos
+        </a>
       </nav>
       <div class="user-box">
         <div class="user-name" id="user-name">—</div>
-        <span class="user-role" id="user-role">—</span>
-        <a href="#" id="logout-link" class="nav-link logout-link">Cerrar sesión</a>
+        <span class="user-role" id="user-role">—</span><br>
+        <a href="#" id="logout-link" class="nav-link logout-link">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          Cerrar sesión
+        </a>
       </div>
     </aside>
 
-    <main class="main-content">
-      <section id="view-home" class="view"></section>
-      <section id="view-clients" class="view" hidden></section>
-      <section id="view-products" class="view" hidden></section>
-    </main>
+    <div class="content-col">
+      <header class="app-bar" id="app-bar-title">Dashboard</header>
+      <main class="main-content">
+        <section id="view-home" class="view"></section>
+        <section id="view-clients" class="view" hidden></section>
+        <section id="view-products" class="view" hidden></section>
+      </main>
+    </div>
   </div>
 
   <div id="modal-overlay" class="modal-overlay" hidden>

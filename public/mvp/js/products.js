@@ -22,7 +22,7 @@ export function initProductsView(container, currentUser) {
           <div class="field"><label>Stock</label><input type="number" min="0" name="stock" value="0"></div>
           <div class="field"><label>Descripción</label><input type="text" name="description"></div>
         </div>
-        <button type="submit" class="btn-sm" style="background:var(--accent);color:#fff;margin-top:8px;">+ Agregar producto</button>
+        <button type="submit" class="btn-sm qa-btn" style="margin-top:8px;">+ Agregar producto</button>
       </form>
     </div>
 

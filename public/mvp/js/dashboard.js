@@ -30,12 +30,14 @@ const views = {
   clients: document.getElementById('view-clients'),
   products: document.getElementById('view-products'),
 };
+const appBarTitle = document.getElementById('app-bar-title');
 document.querySelectorAll('.nav-link[data-view]').forEach((link) => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
     const target = link.dataset.view;
     document.querySelectorAll('.nav-link[data-view]').forEach((l) => l.classList.remove('active'));
     link.classList.add('active');
+    if (appBarTitle && link.dataset.title) appBarTitle.textContent = link.dataset.title;
     Object.entries(views).forEach(([key, el]) => {
       el.hidden = key !== target;
     });
