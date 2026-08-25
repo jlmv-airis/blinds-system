@@ -2,6 +2,7 @@ import { Api } from './api.js';
 import { initHomeView } from './home.js';
 import { initClientsView } from './clients.js';
 import { initProductsView } from './products.js';
+import { initOrdersView } from './orders.js';
 
 // --- Guard de autenticación ---
 if (!Api.isAuthenticated()) {
@@ -29,6 +30,7 @@ const views = {
   home: document.getElementById('view-home'),
   clients: document.getElementById('view-clients'),
   products: document.getElementById('view-products'),
+  orders: document.getElementById('view-orders'),
 };
 const appBarTitle = document.getElementById('app-bar-title');
 document.querySelectorAll('.nav-link[data-view]').forEach((link) => {
@@ -69,4 +71,5 @@ async function loadCurrentUser() {
   initHomeView(views.home, user);
   initClientsView(views.clients, user);
   initProductsView(views.products, user);
+  initOrdersView(views.orders, user);
 })();

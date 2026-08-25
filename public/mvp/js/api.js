@@ -112,6 +112,23 @@ const Api = {
   deleteProduct(id) {
     return this.request('DELETE', `/products/${id}`);
   },
+
+  // --- Órdenes ---
+  listOrders() {
+    return this.request('GET', '/orders');
+  },
+  createOrder(data) {
+    return this.request('POST', '/orders', data);
+  },
+  showOrder(id) {
+    return this.request('GET', `/orders/${id}`);
+  },
+  updateOrder(id, data) {
+    return this.request('PUT', `/orders/${id}`, data);
+  },
+  deleteOrder(id) {
+    return this.request('DELETE', `/orders/${id}`);
+  },
 };
 
 export { Api, ApiError };
