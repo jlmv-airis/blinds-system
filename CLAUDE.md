@@ -2,30 +2,25 @@
 
 ## Contexto del proyecto
 
-Se está migrando a la nube una plataforma local de venta de cortinas/persianas.
+Se está migrando a la nube un ERP local de fabricación/venta de persianas, cortinas y toldos.
 
-- **Empresa anterior:** Lanson — dueña original del sistema.
-- **Empresa actual:** Blindsystem — heredó el sistema; solo se adaptaron los servicios existentes de Lanson para operar bajo la nueva marca (branding, datos, posiblemente dominios/credenciales), sin un rediseño completo.
+- **Empresa anterior:** Lanson — dueña original del sistema (marca "Lanson Shades").
+- **Empresa actual:** Blindsystem — nombre nuevo del ERP en sí. El sistema es **multi-marca**: sigue operando Lanson Shades (LS), Rollertex (RT) y Lanson Beckman (LB) bajo una sola base de datos (`CCompany`). "Lanson" no desapareció, sigue siendo una de las marcas activas — ver `docs/scan-findings.md`.
 - **Destino de despliegue:** Neubox.
 - **Repositorio de trabajo:** este repo (`~/Documents/GitHub/blinds-system`), en GitHub como [`jlmv-airis/blinds-system`](https://github.com/jlmv-airis/blinds-system) (privado).
 - **Rol del usuario:** developer, dueño técnico de la migración.
 
 ## Estado actual (2026-08-25)
 
-- Aún no se ha recibido el código fuente de la plataforma local. Se está en espera del **zip con todo el código** que corre localmente.
-- El stack tecnológico de la plataforma actual **todavía no se conoce** — se determinará al escanear el código una vez recibido.
-- No se ha decidido aún la estrategia de migración (rehost / replatform / rearchitect) — depende de lo que se encuentre en el escaneo.
-
-## Cómo continuar cuando llegue el zip
-
-1. El usuario coloca el .zip en [`incoming/`](incoming/).
-2. Descomprimir en `incoming/` (o en una subcarpeta con el nombre del zip) y escanear el código: stack, framework, base de datos, dependencias externas, integraciones de pago/envío, estructura de módulos, artefactos con nombre "Lanson" remanente.
-3. Con el resultado del escaneo, documentar hallazgos en `docs/`.
-4. **Solo después del escaneo**, diseñar el equipo de subagentes (`.claude/agents/`) especializado para el levantamiento del servicio en Neubox — no crear agentes antes de tener este contexto real.
-5. Definir plan de migración y estructura final del repo con base en lo anterior.
+- Código fuente recibido en `incoming/` (Laravel 8 + Vue 2 + Vuetify 2 + Node socket server). Versión vigente en producción confirmada por el usuario: `Blindsystem_5.4` (idéntica byte a byte a `Blindsystem_V5.3` — ver nota en `docs/scan-findings.md`).
+- Escaneo completo realizado — hallazgos en [`docs/scan-findings.md`](docs/scan-findings.md), incluyendo problemas de seguridad críticos (rutas sin autenticación, credenciales hardcodeadas, `.env` de producción con `APP_DEBUG=true`) y bloqueantes (falta el dump real de base de datos `LansonAllDB.sql`).
+- Equipo de agentes diseñado en [`.claude/agents/`](.claude/agents/) — ver [`docs/agent-team.md`](docs/agent-team.md) para el rol de cada uno y el orden de trabajo sugerido.
+- Pendiente: conseguir el dump real de BD, confirmar tipo de servicio/accesos de Neubox, ejecutar el trabajo de cada agente.
 
 ## Reglas de trabajo
 
-- No asumir stack, framework ni arquitectura hasta confirmarlo en el código real.
-- No diseñar agentes ni planeación detallada de migración antes de completar el escaneo de código.
+- No asumir stack, framework ni arquitectura sin confirmarlo en el código real (ya se hizo para V5.3/5.4 — cualquier versión nueva que llegue debe re-escanearse, no asumir que es igual).
+- Todo lo que llega a `incoming/` (código legacy, `.env` reales, dumps) nunca se sube a git — ver `.gitignore`. Solo `incoming/README.md` se trackea.
+- Cualquier credencial encontrada en el código legacy (APP_KEY, JWT_SECRET, credenciales Firebird/MySQL) se trata como comprometida y debe rotarse en el ambiente nuevo — nunca reutilizar valores del local en Neubox.
 - Mantener este repo fuera de carpetas sincronizadas por Google Drive/Dropbox — evita corrupción de `.git` por conflictos de sincronización.
+- Antes de cualquier despliegue real, ejecutar/consultar `security-hardening` y `deploy-ops` (ver `.claude/agents/`) — no desplegar directo sin pasar por el checklist.

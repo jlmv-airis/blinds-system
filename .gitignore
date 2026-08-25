@@ -5,8 +5,8 @@
 .vscode/
 .idea/
 
-# Incoming raw drops (zips, dumps) — not meant for version control
-incoming/*.zip
-incoming/*.tar.gz
-incoming/*.sql
-incoming/*.env
+# Incoming raw drops (legacy source zips/archives, extracted trees, dumps,
+# real .env files with live credentials) — never meant for version control.
+# Only README.md inside incoming/ is tracked.
+incoming/*
+!incoming/README.md
