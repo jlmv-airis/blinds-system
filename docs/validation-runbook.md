@@ -134,3 +134,18 @@ curl -sS -X DELETE "$BASE/products/<ID>" -H "Authorization: Bearer <token_de_use
 | `personal_access_tokens` | 6 emitidos en total | — |
 
 Nada de esto se simuló — cada bloque de este documento tiene su ejecución real registrada en la sesión que lo generó.
+
+## Corrida adicional — 2026-08-25 20:04–20:06
+
+Segunda corrida completa (12 casos: auth, CRUD clientes con validación de email, CRUD productos, 404 en ID inexistente, 403 por rol) — 12/12 con el resultado esperado. Cada delete/update inválido se verificó cruzando contra MySQL directo, no solo la respuesta HTTP.
+
+**Hallazgo nuevo, sin corregir**: `GET` a cualquier ruta protegida por `auth:sanctum` **sin** header `Accept: application/json` devuelve `500` en vez de `401`. Causa: `app/Http/Middleware/Authenticate.php:18` (clase base de Laravel, sin personalizar) llama a `route('login')` en `redirectTo()`, pero no existe ninguna ruta nombrada `login` en el proyecto (ni en `web.php` ni en `api.php`) → `RouteNotFoundException` sin capturar. No afecta a clientes que sí mandan `Accept: application/json` (incluido `public/mvp/js/api.js`).
+
+```bash
+# reproducir
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/api/me
+# -> 500
+
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/api/me -H "Accept: application/json"
+# -> 401 (correcto)
+```
