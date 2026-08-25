@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+
+# Incoming raw drops (zips, dumps) — not meant for version control
+incoming/*.zip
+incoming/*.tar.gz
+incoming/*.sql
+incoming/*.env
