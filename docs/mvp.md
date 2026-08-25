@@ -100,3 +100,17 @@ php artisan serve --host=127.0.0.1 --port=8000
 - No se reconstruyó el esquema de las 119 tablas legacy.
 - No se tocó la integración con ASPEL.
 - El resto de los módulos del ERP legacy (órdenes, cotizaciones, garantías, etc.) sigue como está, documentado pero no reparado — ver `docs/security-audit-legacy.md` para los hallazgos críticos de seguridad encontrados ahí (SQLi, IDOR) que quedan pendientes para cuando se retome esa parte.
+
+## Actualización 2026-08-25 (2) — entry point único, sin mezcla de frontends
+
+El audit de archivos frontend (ver conversación) encontró una tercera superficie visual además del SPA legacy y el MVP: `/articles/prices` (`resources/views/articles/prices.blade.php`), un mini-frontend Blade que habla directo a `c_articles` sin pasar por `/api/*` — no estaba detrás de ningún flag, seguía sirviéndose en vivo.
+
+Se envolvió ese mismo bloque de rutas en `if (config('app.legacy_ui_enabled'))` — el mismo flag que ya protegía al SPA legacy (`LEGACY_UI_ENABLED` en `.env`, default `false`). No se creó un flag nuevo ni se borró código: con el flag en `true`, las 4 rutas (`GET /articles/prices`, `POST .../update|delete|create`) vuelven a registrarse exactamente igual que antes (confirmado con `route:list`).
+
+**Verificado en vivo, no solo leído:**
+- `GET /` → 302 → `/mvp/index.html`
+- `GET /articles/prices` → 302 → `/mvp/index.html` (antes servía la vista Blade directo)
+- `POST /api/login` → sin cambios, 200 con token — la API del backend no se tocó
+- `LEGACY_UI_ENABLED=true` → las 4 rutas de `articles/prices` reaparecen intactas
+
+Con esto, `/mvp` es el único frontend alcanzable por default — cero mezcla, cero rutas ambiguas fuera del flag.

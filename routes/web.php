@@ -442,7 +442,11 @@ Route::group(['middleware' => [], 'prefix' => 'import'], function () {
     Route::post('/importItemsOrder', [ImportFileController::class, 'importItemsOrder']);
 });
 
-// VISTA SIMPLE DE ARTICULOS CON PRECIOS L1 Y L2
+// VISTA SIMPLE DE ARTICULOS CON PRECIOS L1 Y L2 — frontend legacy (Blade, habla directo
+// a c_articles, sin pasar por /api/*). Mismo flag que el SPA legacy: config('app.legacy_ui_enabled')
+// (env LEGACY_UI_ENABLED, default false). No se borró nada, solo se dejó de servir por default,
+// para que el único frontend alcanzable sea el MVP (/mvp) y no haya mezcla de frontends.
+if (config('app.legacy_ui_enabled')) {
 Route::middleware(['web'])->group(function () {
     Route::get('/articles/prices', function () {
         $articles = DB::table('c_articles')
@@ -511,6 +515,7 @@ Route::middleware(['web'])->group(function () {
         return redirect('/articles/prices')->with('success', 'Artículo creado correctamente');
     });
 });
+}
 
 // Frontend legacy (Vue) aislado detrás de config('app.legacy_ui_enabled') — no se borró
 // nada, solo se dejó de servir por default. Ver docs/mvp.md. Para depurar el sistema
