@@ -12,7 +12,13 @@ No se reutilizó el sistema de auth legacy (`CErpUserController`/`CErpUser`, lig
 - **Validación real**: `FormRequest` en cada endpoint de escritura — el legacy no tenía ni un solo caso de esto en toda la app (confirmado por auditoría).
 - **Respuestas consistentes**: siempre `{success, data|message|errors}` con el código HTTP correcto (200/201/401/403/422/500) — el legacy mezclaba 200/400/403 para errores de forma inconsistente.
 
-Todo esto vive en `routes/api.php` (antes sin usar) — el legacy en `routes/web.php` no se tocó.
+Todo esto vive en `routes/api.php` (antes sin usar) — el legacy en `routes/web.php` no se tocó (excepto el fix puntual de abajo).
+
+## Actualización 2026-08-25 — bug del login legacy corregido directamente
+
+Además del MVP, se corrigió el bug crítico en el propio `CErpUserController::login()` (ambos flujos: email+password local y Firebase/uid), reemplazando `json_decode($user->accessModules, true)` por `$user->accessModules->toArray()` (y lo mismo para `accessSubModules`). Se eligió resolver la relación Eloquent correctamente en vez de mover los permisos a una columna JSON, porque `d_erp_access_users` (la fuente real de los permisos) se modifica directamente vía INSERT/DELETE desde `updateModules()` en el mismo controlador — un JSON denormalizado habría requerido mantenerlo sincronizado ahí también, un cambio de mayor alcance para un hosting compartido donde la estabilidad importa más que la arquitectura ideal.
+
+**Límite honesto de la verificación**: se confirmó sintaxis PHP válida y se revisó que las relaciones `accessModules()`/`accessSubModules()` en `CErpUser.php` ya aliasan las columnas exactamente como `ModulesAccess()` las espera (`module_id`, `if_submodulo`, etc. — sin colisión de `id`). **No se pudo probar este fix contra un login real end-to-end**, porque eso requiere las 7 tablas del sistema de permisos legacy (`c_erp_users`, `c_erp_info_users`, `c_companies`, `c_departments`, `c_erp_modules`, `c_erp_submodules`, `d_erp_access_users`), y por instrucción explícita no se está reconstruyendo ese esquema. Confianza alta por análisis estático + comportamiento documentado de Eloquent, pero no confirmado en vivo.
 
 ## Archivos nuevos
 
