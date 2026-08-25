@@ -1,4 +1,5 @@
 import { Api } from './api.js';
+import { initHomeView } from './home.js';
 import { initClientsView } from './clients.js';
 import { initProductsView } from './products.js';
 
@@ -25,6 +26,7 @@ overlay.addEventListener('click', (e) => {
 
 // --- Navegación de sidebar ---
 const views = {
+  home: document.getElementById('view-home'),
   clients: document.getElementById('view-clients'),
   products: document.getElementById('view-products'),
 };
@@ -62,6 +64,7 @@ async function loadCurrentUser() {
 (async function init() {
   const user = await loadCurrentUser();
   if (!user) return;
+  initHomeView(views.home, user);
   initClientsView(views.clients, user);
   initProductsView(views.products, user);
 })();
