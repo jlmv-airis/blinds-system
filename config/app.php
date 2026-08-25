@@ -17,6 +17,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Legacy Vue Frontend
+    |--------------------------------------------------------------------------
+    |
+    | Controla si el catch-all de routes/web.php sirve el SPA legacy (Vue viejo,
+    | requiere las tablas c_erp_*) o redirige al MVP nuevo (/mvp.html, Sanctum).
+    | Default: false — el legacy no se borró, solo queda aislado detrás de este
+    | flag. Ver docs/mvp.md. Reactivar con LEGACY_UI_ENABLED=true en .env.
+    |
+    */
+
+    'legacy_ui_enabled' => (bool) env('LEGACY_UI_ENABLED', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

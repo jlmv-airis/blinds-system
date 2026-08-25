@@ -512,7 +512,16 @@ Route::middleware(['web'])->group(function () {
     });
 });
 
-Route::get('/{any}', function () {
-    return view('app');
-})->where('any','.*');
+// Frontend legacy (Vue) aislado detrás de config('app.legacy_ui_enabled') — no se borró
+// nada, solo se dejó de servir por default. Ver docs/mvp.md. Para depurar el sistema
+// viejo: LEGACY_UI_ENABLED=true en .env (necesita las tablas c_erp_* reconstruidas).
+if (config('app.legacy_ui_enabled')) {
+    Route::get('/{any}', function () {
+        return view('app');
+    })->where('any', '.*');
+} else {
+    Route::get('/{any}', function () {
+        return redirect('/mvp.html');
+    })->where('any', '.*');
+}
 
