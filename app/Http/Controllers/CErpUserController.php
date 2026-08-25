@@ -316,8 +316,10 @@ class CErpUserController extends Controller
                 ], 200);
             }
             $token = JWTAuth::fromUser($user);
-            $modules = json_decode($user->accessModules, true);
-            $submodules = json_decode($user->accessSubModules, true);
+            // accessModules()/accessSubModules() son relaciones Eloquent (hasMany), no JSON —
+            // se resuelven a array directamente, nunca con json_decode() sobre la Collection.
+            $modules = $user->accessModules->toArray();
+            $submodules = $user->accessSubModules->toArray();
             $Access = self::ModulesAccess($modules, $submodules);
             return response()->json([
                 'success'    => true,
@@ -349,8 +351,10 @@ class CErpUserController extends Controller
         }
         if($user->is_active == 1) {
             if($token) {
-                $modules = json_decode($user->accessModules, true);
-                $submodules =  json_decode($user->accessSubModules, true);
+                // accessModules()/accessSubModules() son relaciones Eloquent (hasMany), no JSON —
+                // se resuelven a array directamente, nunca con json_decode() sobre la Collection.
+                $modules = $user->accessModules->toArray();
+                $submodules = $user->accessSubModules->toArray();
                 $Access = self::ModulesAccess($modules,$submodules);
                 return response()->json([
                     'success'    =>  true ,
