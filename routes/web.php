@@ -521,7 +521,7 @@ if (config('app.legacy_ui_enabled')) {
     })->where('any', '.*');
 } else {
     Route::get('/{any}', function () {
-        return redirect('/mvp.html');
+        return redirect('/mvp/index.html');
     })->where('any', '.*');
 }
 

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blindsystem MVP — Dashboard</title>
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">Blindsystem</div>
+      <nav>
+        <a href="#" data-view="clients" class="nav-link active">Clientes</a>
+        <a href="#" data-view="products" class="nav-link">Productos</a>
+      </nav>
+      <div class="user-box">
+        <div class="user-name" id="user-name">—</div>
+        <span class="user-role" id="user-role">—</span>
+        <a href="#" id="logout-link" class="nav-link logout-link">Cerrar sesión</a>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <section id="view-clients" class="view"></section>
+      <section id="view-products" class="view" hidden></section>
+    </main>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay" hidden>
+    <div class="modal-box" id="modal-box"></div>
+  </div>
+
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>
