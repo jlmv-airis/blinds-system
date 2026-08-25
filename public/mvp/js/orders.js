@@ -1,5 +1,6 @@
 import { Api, ApiError } from './api.js';
-import { openModal, closeModal } from './dashboard.js';
+import { openModal, closeModal } from './components/modal.js';
+import { renderTable } from './components/table.js';
 
 const STATUS_LABEL = { pending: 'Pendiente', confirmed: 'Confirmada', cancelled: 'Cancelada' };
 
@@ -41,14 +42,16 @@ export function initOrdersView(container, currentUser) {
 
     <div class="card">
       <h2>Listado</h2>
-      <table>
-        <thead><tr><th>ID</th><th>Cliente</th><th>Estado</th><th>Productos</th><th>Total</th><th>Fecha</th><th>Acciones</th></tr></thead>
-        <tbody id="orders-tbody"></tbody>
-      </table>
+      <div class="toolbar">
+        <input type="search" id="order-search" placeholder="Buscar por cliente..." class="search-input">
+      </div>
+      <div id="orders-table-wrap"></div>
     </div>
   `;
 
-  const tbody = container.querySelector('#orders-tbody');
+  const tableWrap = container.querySelector('#orders-table-wrap');
+  const orderSearch = container.querySelector('#order-search');
+  let allOrders = [];
   const createForm = container.querySelector('#order-create-form');
   const createAlert = container.querySelector('#create-alert');
   const clientSelect = container.querySelector('#order-client-select');
@@ -111,51 +114,60 @@ export function initOrdersView(container, currentUser) {
 
   container.querySelector('#add-item-row').addEventListener('click', addItemRow);
 
+  const columns = [
+    { label: 'ID', render: (o) => `#${o.id}` },
+    { label: 'Cliente', render: (o) => escapeHtml(o.client?.name || '—') },
+    {
+      label: 'Estado',
+      render: (o) => `
+        <select class="status-select" data-id="${o.id}" style="padding:4px 6px; font-size:12px; width:auto;">
+          <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pendiente</option>
+          <option value="confirmed" ${o.status === 'confirmed' ? 'selected' : ''}>Confirmada</option>
+          <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelada</option>
+        </select>`,
+    },
+    { label: 'Productos', render: (o) => o.items_count ?? '—' },
+    { label: 'Total', render: (o) => fmtMoney(o.total) },
+    { label: 'Fecha', render: (o) => fmtDate(o.created_at) },
+    {
+      label: 'Acciones',
+      render: (o) => `
+        <div class="actions">
+          <button class="btn-sm" data-detail="${o.id}">Ver</button>
+          <button class="btn-sm danger" data-delete="${o.id}" ${currentUser.role !== 'admin' ? 'disabled title="Solo un admin puede eliminar"' : ''}>Eliminar</button>
+        </div>`,
+    },
+  ];
+
+  function draw(rows) {
+    tableWrap.innerHTML = renderTable({ columns, rows, emptyMessage: 'No hay órdenes todavía.' });
+    tableWrap.querySelectorAll('.status-select').forEach((sel) => {
+      sel.addEventListener('change', () => handleStatusChange(sel.dataset.id, sel.value));
+    });
+    tableWrap.querySelectorAll('[data-detail]').forEach((btn) => {
+      btn.addEventListener('click', () => openDetailModal(btn.dataset.detail));
+    });
+    tableWrap.querySelectorAll('[data-delete]').forEach((btn) => {
+      btn.addEventListener('click', () => handleDelete(btn.dataset.delete));
+    });
+  }
+
+  function applyFilter() {
+    const q = orderSearch.value.trim().toLowerCase();
+    const rows = q ? allOrders.filter((o) => (o.client?.name || '').toLowerCase().includes(q)) : allOrders;
+    draw(rows);
+  }
+  orderSearch.addEventListener('input', applyFilter);
+
   async function refresh() {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Cargando...</td></tr>`;
+    tableWrap.innerHTML = renderTable({ columns, rows: [], emptyMessage: 'Cargando...' });
     try {
       const res = await Api.listOrders();
-      renderRows(res.data);
+      allOrders = res.data || [];
+      applyFilter();
     } catch (err) {
       handleViewError(err);
     }
-  }
-
-  function renderRows(orders) {
-    if (!orders.length) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="7">No hay órdenes todavía.</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = orders.map((o) => `
-      <tr>
-        <td>#${o.id}</td>
-        <td>${escapeHtml(o.client?.name || '—')}</td>
-        <td>
-          <select class="status-select" data-id="${o.id}" style="padding:4px 6px; font-size:12px; width:auto;">
-            <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pendiente</option>
-            <option value="confirmed" ${o.status === 'confirmed' ? 'selected' : ''}>Confirmada</option>
-            <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelada</option>
-          </select>
-        </td>
-        <td>${o.items_count ?? '—'}</td>
-        <td>${fmtMoney(o.total)}</td>
-        <td>${fmtDate(o.created_at)}</td>
-        <td class="actions">
-          <button class="btn-sm" data-detail="${o.id}">Ver</button>
-          <button class="btn-sm danger" data-delete="${o.id}" ${currentUser.role !== 'admin' ? 'disabled title="Solo un admin puede eliminar"' : ''}>Eliminar</button>
-        </td>
-      </tr>
-    `).join('');
-
-    tbody.querySelectorAll('.status-select').forEach((sel) => {
-      sel.addEventListener('change', () => handleStatusChange(sel.dataset.id, sel.value));
-    });
-    tbody.querySelectorAll('[data-detail]').forEach((btn) => {
-      btn.addEventListener('click', () => openDetailModal(btn.dataset.detail));
-    });
-    tbody.querySelectorAll('[data-delete]').forEach((btn) => {
-      btn.addEventListener('click', () => handleDelete(btn.dataset.delete));
-    });
   }
 
   function handleViewError(err) {
@@ -163,7 +175,7 @@ export function initOrdersView(container, currentUser) {
       window.location.href = 'index.html';
       return;
     }
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">Error al cargar: ${escapeHtml(err.message)}</td></tr>`;
+    tableWrap.innerHTML = `<div class="alert alert-error">Error al cargar: ${escapeHtml(err.message)}</div>`;
   }
 
   createForm.addEventListener('submit', async (e) => {

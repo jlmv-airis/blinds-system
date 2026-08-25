@@ -1,4 +1,5 @@
 import { Api } from './api.js';
+import { initModal } from './components/modal.js';
 import { initHomeView } from './home.js';
 import { initClientsView } from './clients.js';
 import { initProductsView } from './products.js';
@@ -9,42 +10,58 @@ if (!Api.isAuthenticated()) {
   window.location.href = 'index.html';
 }
 
-// --- Modal compartido (usado por clients.js / products.js) ---
-const overlay = document.getElementById('modal-overlay');
-const modalBox = document.getElementById('modal-box');
+initModal();
 
-export function openModal(html) {
-  modalBox.innerHTML = html;
-  overlay.hidden = false;
-}
-export function closeModal() {
-  overlay.hidden = true;
-  modalBox.innerHTML = '';
-}
-overlay.addEventListener('click', (e) => {
-  if (e.target === overlay) closeModal();
-});
+// --- Sidebar colapsable ---
+const sidebar = document.getElementById('sidebar');
+const COLLAPSE_KEY = 'mvp_sidebar_collapsed';
+if (localStorage.getItem(COLLAPSE_KEY) === '1') sidebar.classList.add('collapsed');
 
-// --- Navegación de sidebar ---
+function toggleSidebar() {
+  sidebar.classList.toggle('collapsed');
+  localStorage.setItem(COLLAPSE_KEY, sidebar.classList.contains('collapsed') ? '1' : '0');
+}
+document.getElementById('sidebar-toggle').addEventListener('click', toggleSidebar);
+document.getElementById('sidebar-toggle-mobile').addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+
+// --- Navegación de sidebar + breadcrumb ---
 const views = {
   home: document.getElementById('view-home'),
   clients: document.getElementById('view-clients'),
   products: document.getElementById('view-products'),
   orders: document.getElementById('view-orders'),
 };
-const appBarTitle = document.getElementById('app-bar-title');
+const breadcrumb = document.getElementById('breadcrumb');
+
+function setActiveView(target, title) {
+  document.querySelectorAll('.nav-link[data-view]').forEach((l) => l.classList.remove('active'));
+  const link = document.querySelector(`.nav-link[data-view="${target}"]`);
+  if (link) link.classList.add('active');
+  breadcrumb.innerHTML = target === 'home'
+    ? '<span>Inicio</span>'
+    : `<span class="breadcrumb-link" data-view="home">Inicio</span><span class="breadcrumb-sep">/</span><span>${title}</span>`;
+  breadcrumb.querySelectorAll('.breadcrumb-link').forEach((el) => {
+    el.addEventListener('click', () => goToView('home'));
+  });
+  Object.entries(views).forEach(([key, el]) => {
+    el.hidden = key !== target;
+  });
+  sidebar.classList.remove('mobile-open');
+}
+
+function goToView(target) {
+  const link = document.querySelector(`.nav-link[data-view="${target}"]`);
+  if (link) setActiveView(target, link.dataset.title);
+}
+
 document.querySelectorAll('.nav-link[data-view]').forEach((link) => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
-    const target = link.dataset.view;
-    document.querySelectorAll('.nav-link[data-view]').forEach((l) => l.classList.remove('active'));
-    link.classList.add('active');
-    if (appBarTitle && link.dataset.title) appBarTitle.textContent = link.dataset.title;
-    Object.entries(views).forEach(([key, el]) => {
-      el.hidden = key !== target;
-    });
+    setActiveView(link.dataset.view, link.dataset.title);
   });
 });
+
+export { goToView };
 
 // --- Logout ---
 document.getElementById('logout-link').addEventListener('click', async (e) => {

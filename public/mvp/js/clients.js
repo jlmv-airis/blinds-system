@@ -1,5 +1,6 @@
 import { Api, ApiError } from './api.js';
-import { openModal, closeModal } from './dashboard.js';
+import { openModal, closeModal } from './components/modal.js';
+import { renderTable, filterRows } from './components/table.js';
 
 function escapeHtml(str) {
   const div = document.createElement('div');
@@ -7,137 +8,115 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+function clientFormFields(client = {}) {
+  return `
+    <div class="form-grid">
+      <div class="field"><label>Nombre *</label><input type="text" name="name" value="${escapeHtml(client.name)}" required></div>
+      <div class="field"><label>Email</label><input type="email" name="email" value="${escapeHtml(client.email)}"></div>
+      <div class="field"><label>Teléfono</label><input type="text" name="phone" value="${escapeHtml(client.phone)}"></div>
+      <div class="field"><label>Dirección</label><input type="text" name="address" value="${escapeHtml(client.address)}"></div>
+    </div>
+  `;
+}
+
 export function initClientsView(container, currentUser) {
   container.innerHTML = `
-    <div class="page-header"><h1>Clientes</h1></div>
-
-    <div class="card">
-      <h2>Nuevo cliente</h2>
-      <div id="create-alert"></div>
-      <form id="client-create-form">
-        <div class="form-grid">
-          <div class="field">
-            <label>Nombre *</label>
-            <input type="text" name="name" required>
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" name="email">
-          </div>
-          <div class="field">
-            <label>Teléfono</label>
-            <input type="text" name="phone">
-          </div>
-          <div class="field">
-            <label>Dirección</label>
-            <input type="text" name="address">
-          </div>
-        </div>
-        <button type="submit" class="btn-sm qa-btn" style="margin-top:8px;">+ Agregar cliente</button>
-      </form>
+    <div class="page-header">
+      <h1>Clientes</h1>
+      <button type="button" class="btn-sm qa-btn" id="btn-new-client">+ Nuevo cliente</button>
     </div>
 
     <div class="card">
-      <h2>Listado</h2>
-      <table>
-        <thead><tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Dirección</th><th>Acciones</th></tr></thead>
-        <tbody id="clients-tbody"></tbody>
-      </table>
+      <div class="toolbar">
+        <input type="search" id="client-search" placeholder="Buscar por nombre, email o teléfono..." class="search-input">
+      </div>
+      <div id="clients-table-wrap"></div>
     </div>
   `;
 
-  const tbody = container.querySelector('#clients-tbody');
-  const createForm = container.querySelector('#client-create-form');
-  const createAlert = container.querySelector('#create-alert');
+  const tableWrap = container.querySelector('#clients-table-wrap');
+  const searchInput = container.querySelector('#client-search');
+  let allClients = [];
+
+  const columns = [
+    { label: 'Nombre', render: (c) => escapeHtml(c.name) },
+    { label: 'Email', render: (c) => escapeHtml(c.email) || '—' },
+    { label: 'Teléfono', render: (c) => escapeHtml(c.phone) || '—' },
+    { label: 'Dirección', render: (c) => escapeHtml(c.address) || '—' },
+    {
+      label: 'Acciones',
+      render: (c) => `
+        <div class="actions">
+          <button class="btn-sm" data-edit="${c.id}">Editar</button>
+          <button class="btn-sm danger" data-delete="${c.id}" ${currentUser.role !== 'admin' ? 'disabled title="Solo un admin puede eliminar"' : ''}>Eliminar</button>
+        </div>`,
+    },
+  ];
+
+  function draw(rows) {
+    tableWrap.innerHTML = renderTable({ columns, rows, emptyMessage: 'No hay clientes todavía.' });
+    tableWrap.querySelectorAll('[data-edit]').forEach((btn) => {
+      btn.addEventListener('click', () => openFormModal(allClients.find((c) => c.id == btn.dataset.edit)));
+    });
+    tableWrap.querySelectorAll('[data-delete]').forEach((btn) => {
+      btn.addEventListener('click', () => handleDelete(btn.dataset.delete));
+    });
+  }
 
   async function refresh() {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Cargando...</td></tr>`;
+    tableWrap.innerHTML = renderTable({ columns, rows: [], emptyMessage: 'Cargando...' });
     try {
       const res = await Api.listClients();
-      renderRows(res.data);
+      allClients = res.data || [];
+      draw(filterRows(allClients, searchInput.value, ['name', 'email', 'phone']));
     } catch (err) {
       handleViewError(err);
     }
   }
 
-  function renderRows(clients) {
-    if (!clients.length) {
-      tbody.innerHTML = `<tr class="empty-row"><td colspan="5">No hay clientes todavía.</td></tr>`;
-      return;
-    }
-    tbody.innerHTML = clients.map((c) => `
-      <tr>
-        <td>${escapeHtml(c.name)}</td>
-        <td>${escapeHtml(c.email) || '—'}</td>
-        <td>${escapeHtml(c.phone) || '—'}</td>
-        <td>${escapeHtml(c.address) || '—'}</td>
-        <td class="actions">
-          <button class="btn-sm" data-edit="${c.id}">Editar</button>
-          <button class="btn-sm danger" data-delete="${c.id}" ${currentUser.role !== 'admin' ? 'disabled title="Solo un admin puede eliminar"' : ''}>Eliminar</button>
-        </td>
-      </tr>
-    `).join('');
-
-    tbody.querySelectorAll('[data-edit]').forEach((btn) => {
-      btn.addEventListener('click', () => openEditModal(clients.find((c) => c.id == btn.dataset.edit)));
-    });
-    tbody.querySelectorAll('[data-delete]').forEach((btn) => {
-      btn.addEventListener('click', () => handleDelete(btn.dataset.delete));
-    });
-  }
+  searchInput.addEventListener('input', () => {
+    draw(filterRows(allClients, searchInput.value, ['name', 'email', 'phone']));
+  });
 
   function handleViewError(err) {
     if (err instanceof ApiError && err.status === 401) {
       window.location.href = 'index.html';
       return;
     }
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="5">Error al cargar: ${escapeHtml(err.message)}</td></tr>`;
+    tableWrap.innerHTML = `<div class="alert alert-error">Error al cargar: ${escapeHtml(err.message)}</div>`;
   }
 
-  createForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    createAlert.innerHTML = '';
-    const fd = new FormData(createForm);
-    const payload = Object.fromEntries(fd.entries());
-    try {
-      await Api.createClient(payload);
-      createForm.reset();
-      createAlert.innerHTML = `<div class="alert alert-success">Cliente creado correctamente.</div>`;
-      setTimeout(() => (createAlert.innerHTML = ''), 3000);
-      refresh();
-    } catch (err) {
-      if (err instanceof ApiError && err.status === 401) return (window.location.href = 'index.html');
-      createAlert.innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
-    }
-  });
+  container.querySelector('#btn-new-client').addEventListener('click', () => openFormModal());
 
-  function openEditModal(client) {
+  function openFormModal(client) {
+    const isEdit = !!client;
     openModal(`
-      <h3>Editar cliente</h3>
-      <div id="edit-alert"></div>
-      <form id="client-edit-form">
-        <div class="field"><label>Nombre *</label><input type="text" name="name" value="${escapeHtml(client.name)}" required></div>
-        <div class="field"><label>Email</label><input type="email" name="email" value="${escapeHtml(client.email)}"></div>
-        <div class="field"><label>Teléfono</label><input type="text" name="phone" value="${escapeHtml(client.phone)}"></div>
-        <div class="field"><label>Dirección</label><input type="text" name="address" value="${escapeHtml(client.address)}"></div>
+      <h3>${isEdit ? 'Editar cliente' : 'Nuevo cliente'}</h3>
+      <div id="form-alert"></div>
+      <form id="client-form">
+        ${clientFormFields(client || {})}
         <div class="modal-actions">
-          <button type="button" class="btn-sm" id="cancel-edit">Cancelar</button>
-          <button type="submit" class="btn-primary">Guardar cambios</button>
+          <button type="button" class="btn-sm" id="cancel-form">Cancelar</button>
+          <button type="submit" class="btn-primary">${isEdit ? 'Guardar cambios' : 'Crear cliente'}</button>
         </div>
       </form>
     `);
-    document.getElementById('cancel-edit').addEventListener('click', closeModal);
-    document.getElementById('client-edit-form').addEventListener('submit', async (e) => {
+    document.getElementById('cancel-form').addEventListener('click', closeModal);
+    document.getElementById('client-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(e.target);
       const payload = Object.fromEntries(fd.entries());
       try {
-        await Api.updateClient(client.id, payload);
+        if (isEdit) {
+          await Api.updateClient(client.id, payload);
+        } else {
+          await Api.createClient(payload);
+        }
         closeModal();
         refresh();
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) return (window.location.href = 'index.html');
-        document.getElementById('edit-alert').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
+        document.getElementById('form-alert').innerHTML = `<div class="alert alert-error">${escapeHtml(err.message)}</div>`;
       }
     });
   }
