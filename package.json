@@ -1,0 +1,40 @@
+{
+    "private": true,
+    "scripts": {
+        "dev": "npm run development",
+        "development": "mix",
+        "watch": "mix watch",
+        "watch-poll": "mix watch -- --watch-options-poll=1000",
+        "hot": "mix watch --hot",
+        "prod": "npm run production",
+        "production": "mix --production"
+    },
+    "devDependencies": {
+        "axios": "^0.21.4",
+        "laravel-mix": "^6.0.49",
+        "lodash": "^4.17.21",
+        "postcss": "^8.4.14",
+        "vue-loader": "^15.10.1",
+        "vue-template-compiler": "^2.7.14"
+    },
+    "dependencies": {
+        "@mdi/font": "^6.9.96",
+        "@splidejs/vue-splide": "^0.3.5",
+        "chart.js": "^4.4.2",
+        "firebase": "^8.10.1",
+        "socket.io-client": "^4.7.0",
+        "sweetalert2": "^11.7.12",
+        "vue": "^2.7.14",
+        "vue-chartjs": "^5.3.1",
+        "vue-inner-image-zoom": "^1.1.1",
+        "vue-product-zoomer": "^3.0.1",
+        "vue-router": "^3.6.5",
+        "vue2-editor": "^2.10.3",
+        "vue2-google-maps": "^0.10.7",
+        "vuedraggable": "^2.24.3",
+        "vuelidate": "^0.7.7",
+        "vuetify": "^2.6.15",
+        "vuex": "^3.6.2",
+        "vuex-persist": "^3.1.3"
+    }
+}

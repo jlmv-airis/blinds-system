@@ -10,3 +10,27 @@
 # Only README.md inside incoming/ is tracked.
 incoming/*
 !incoming/README.md
+
+# Laravel app (now at repo root)
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*.log
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitignore
+/vendor
+.env
+.env.backup
+.phpunit.result.cache
+docker-compose.override.yml
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log

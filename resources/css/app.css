@@ -1,0 +1,106 @@
+.splide__arrow {
+    background: initial !important;
+}
+.panel-table-relation {
+    padding: 0px !important;
+    font-size: 10px !important;
+}
+.panel-table-color {
+    padding: 0px !important;
+    font-size: 10px !important;
+}
+.panel-table-delete {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0px !important;
+    font-size: 10px !important;
+    border: 1px solid #EEEEEE;
+}
+.panel-table-td {
+    border: 1px solid #EEEEEE;
+    padding: 0px 10px !important;
+    font-size: 10px !important;
+}
+.panel-table-td-odr {
+    border: 1px solid #EEEEEE;
+    padding: 0px 10px !important;
+    font-size: 12px !important;
+}
+.panel-table-td-qto {
+    border: 1px solid #EEEEEE;
+    padding: 0px 10px !important;
+    font-size: 12px !important;
+}
+.panel-table-options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #EEEEEE;
+    padding: 0px 4px !important;
+}
+ /* GRAFICS MODULATION */
+.mr-div-cloths {
+    border: 1px solid #d2d0d0;
+    background-color: #f3f2f2;
+}
+.mr-div-join-cloths {
+    display: flex;
+    flex-direction: row;
+}
+
+/* EXPANSIVE TQBLE BOX*/
+.v-data-table>.v-data-table__wrapper tbody tr.v-data-table__expanded__content{
+    box-shadow: initial !important;
+    background-color: #f4f4f4;
+}
+/* QR */
+.qr-table-td {
+    padding: 0px 10px !important;
+    font-size: 12px !important;
+}
+
+
+.info-clients-notes-text p {
+    margin-bottom: 1px !important;
+}
+
+/* calendar */
+.v-current-time {
+    height: 2px;
+    background-color: #ea4335;
+    position: absolute;
+    left: -1px;
+    right: 0;
+    pointer-events: none;
+
+    &.first::before {
+        content: '';
+        position: absolute;
+        background-color: #ea4335;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-top: -5px;
+        margin-left: -6.5px;
+    }
+}
+
+/* LEADS */
+
+.leads-list-group {
+    overflow-y: auto;
+}
+.leads-list-group::-webkit-scrollbar {
+    width: 10px;               /* width of the entire scrollbar */
+}
+
+.leads-list-group::-webkit-scrollbar-track {
+    background: white;        /* color of the tracking area */
+}
+
+.leads-list-group::-webkit-scrollbar-thumb {
+    background-color: rgb(193, 193, 193);    /* color of the scroll thumb */
+    border-radius: 20px;       /* roundness of the scroll thumb */
+    border: 3px solid white;  /* creates padding around scroll thumb */
+}
