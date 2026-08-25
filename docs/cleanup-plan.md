@@ -69,6 +69,30 @@ Estos archivos SÍ tienen lógica real (no son stubs), pero parecen superados po
 - `config/broadcasting.php`, `config/queue.php`, `config/filesystems.php`, `config/services.php` están prácticamente en sus valores por defecto de Laravel, sin conexión real con el código (todo corre en `sync`/`local`/`log`). Se puede simplificar a lo mínimo real sin riesgo, una vez resuelta la decisión de tiempo real (Fase 2).
 - Cobertura de tests real: **0%** (solo el scaffold de ejemplo de Laravel). No es código muerto, es ausencia total — se documenta aquí como decisión pendiente de inversión, no como algo a "limpiar".
 
+## Ejecución — actualización 2026-08-25 (rama `etapa-1-limpieza-seguridad`)
+
+Aplicado y verificado con PHP real (no solo lectura de código):
+
+- **Bug P0 corregido**: `dd()` eliminado de `DashboardInventoryController.php:24`.
+- **52 controladores vacíos eliminados** (confirmados 100% stub por grep automatizado, no por la lista de memoria del análisis anterior — se re-verificó cada uno).
+- **31 archivos `.bak*`/`.mojibake` eliminados** (19MB), incluyendo los que estaban dentro de `public/v/` (potencialmente servibles por HTTP).
+- **Archivos de debug/credenciales eliminados**: `_debug_home.php`, `_check2.php`, `_test_login.php`, `test_jwt.php`, `app/classes/env` (Firebird), más `app/classes/test.php` (clase inalcanzable) y los dumps SQL sueltos `sp`/`sp2`/`sp3`.
+- **Import muerto** (`ShouldQueue` en `SendQuotationMailable.php`) y **3 imports rotos en `routes/web.php`** (`DWarehouseLevelController` — el archivo no existe — y dos modelos sin uso) eliminados.
+
+**2 bugs reales nuevos encontrados y corregidos, no estaban en el análisis original** (solo aparecen al ejecutar la app de verdad, no con lectura estática de código):
+- `app/fpdf/fpdf.php` y `app/fpdf/PDF_Code128.php` se incluían con `require` (no `require_once`) desde 11 controladores distintos — cualquier request real que cargue más de uno de esos controladores en el mismo proceso PHP truena con "constant/class already defined". Corregido en los 11 controladores activos (se dejó `ModulationFileControllerNEW.php` intacto, sigue pendiente de confirmación).
+- **El `vendor/` que viene en el zip requiere PHP >= 8.3**, aunque `composer.json` declara `^7.3|^8.0` — inconsistencia entre lo declarado y lo realmente instalado. Importante para `deploy-ops`: Neubox necesita PHP 8.3+ disponible, no una versión más vieja como sugiere la documentación.
+
+**Verificación de regresión**: con PHP 8.3 real, `php artisan route:list` corre limpio — **264 rutas**, cero errores de clase faltante. Confirma que ninguna de las eliminaciones rompió una ruta real (si algo borrado estuviera en uso, `route:list` habría fallado al resolver esa ruta).
+
+**`.env` de producción generado**: `APP_KEY` y `JWT_SECRET` nuevos (rotados, no reutilizan nada del local), `APP_ENV=production`, `APP_DEBUG=false`. `DB_*` y credenciales de AWS/Pusher quedan vacías con `# TODO` — se llenan cuando exista la base de datos real en Neubox (ver `docs/db-migration-plan.md`) y si de verdad se decide usar esos servicios (el escaneo no encontró uso real de `Storage::disk()` ni `Broadcast::` en el código). El `.env` local viejo (con las credenciales ya comprometidas) se eliminó del todo, no solo se reemplazó.
+
+**Logs viejos eliminados** de `storage/logs/` (2.9MB, incluían trazas de la sesión de pruebas de hoy) — no aportan nada al ambiente nuevo.
+
+**Verificación final**: 273 archivos PHP (`app/`, `routes/`, `config/`) sin errores de sintaxis con PHP 8.3 real.
+
+Pendiente en esta misma rama (bajo impacto, no bloqueante): quitar comentarios "// OLD" en `FPDFMR*.php` (cosmético, el texto exacto no calzó por espacios/tabs, se puede retomar después).
+
 ## Confirmado: nada de esto toca la base de datos
 
 Todo el plan opera sobre controladores, rutas, archivos de config, y artefactos del bundle de frontend. No se propone ningún cambio de esquema, migración destructiva, ni borrado de datos — consistente con el requisito del usuario de mantener las bases de datos intactas.

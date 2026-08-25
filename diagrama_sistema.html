@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blindsystems - Diagrama del Sistema</title>
+<script src="mermaid.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #0f172a; color: #e2e8f0; }
+  
+  /* Hero */
+  .hero {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 60px 40px 40px; text-align: center; border-bottom: 1px solid #1e293b;
+  }
+  .hero h1 { font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .hero p { color: #94a3b8; margin-top: 12px; font-size: 1.1rem; max-width: 700px; margin-inline: auto; }
+  .hero .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+  .badge { padding: 6px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: 500; }
+  .badge.laravel { background: #1e293b; color: #f472b6; border: 1px solid #f472b644; }
+  .badge.vue { background: #1e293b; color: #34d399; border: 1px solid #34d39944; }
+  .badge.mysql { background: #1e293b; color: #60a5fa; border: 1px solid #60a5fa44; }
+  .badge.jwt { background: #1e293b; color: #fbbf24; border: 1px solid #fbbf2444; }
+  .badge.node { background: #1e293b; color: #fb923c; border: 1px solid #fb923c44; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 4px; padding: 20px 40px 0; background: #0f172a; flex-wrap: wrap; }
+  .tab {
+    padding: 12px 24px; border-radius: 10px 10px 0 0; cursor: pointer; font-weight: 500;
+    color: #64748b; background: transparent; border: none; font-size: 0.95rem;
+    transition: all 0.2s; border-bottom: 2px solid transparent;
+  }
+  .tab:hover { color: #94a3b8; background: #1e293b55; }
+  .tab.active { color: #60a5fa; background: #1e293b; border-bottom-color: #60a5fa; }
+
+  /* Content */
+  .content { padding: 30px 40px; max-width: 1400px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .diagram-container {
+    background: #1e293b; border-radius: 12px; padding: 30px; margin-bottom: 24px;
+    border: 1px solid #334155; overflow: auto;
+  }
+  .diagram-container h3 { color: #94a3b8; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+
+  /* Info Cards */
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+  .info-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 20px;
+    transition: all 0.2s; cursor: pointer;
+  }
+  .info-card:hover { border-color: #60a5fa44; transform: translateY(-2px); box-shadow: 0 8px 24px #00000033; }
+  .info-card .icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .info-card h4 { color: #f1f5f9; font-size: 1rem; margin-bottom: 6px; }
+  .info-card p { color: #64748b; font-size: 0.85rem; line-height: 1.5; }
+
+  /* Module cards */
+  .module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 16px; }
+  .module-card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 16px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .module-card:hover { border-color: #a78bfa44; transform: translateY(-2px); }
+  .module-card .emoji { font-size: 2rem; margin-bottom: 6px; }
+  .module-card h5 { color: #e2e8f0; font-size: 0.9rem; }
+  .module-card p { color: #64748b; font-size: 0.75rem; margin-top: 4px; }
+
+  /* Stats row */
+  .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 24px; }
+  .stat {
+    flex: 1; min-width: 140px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    padding: 16px 20px; text-align: center;
+  }
+  .stat .number { font-size: 1.8rem; font-weight: 700; color: #60a5fa; }
+  .stat .label { color: #64748b; font-size: 0.8rem; margin-top: 4px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px 16px; background: #0f172a; border-radius: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: #94a3b8; }
+  .legend-color { width: 14px; height: 14px; border-radius: 4px; }
+
+  /* Mermaid overrides */
+  .mermaid svg { max-width: 100%; height: auto; }
+  .mermaid .label { color: #e2e8f0 !important; }
+  .mermaid .cluster-label span { color: #f1f5f9 !important; }
+  .mermaid .edgeLabel { color: #94a3b8 !important; background: #1e293b !important; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .hero { padding: 40px 20px 30px; }
+    .hero h1 { font-size: 1.8rem; }
+    .tabs { padding: 16px 16px 0; overflow-x: auto; flex-wrap: nowrap; }
+    .tab { padding: 10px 16px; font-size: 0.85rem; white-space: nowrap; }
+    .content { padding: 20px 16px; }
+    .diagram-container { padding: 16px; }
+    .stats .stat { min-width: 100px; }
+    .stat .number { font-size: 1.4rem; }
+  }
+
+  /* Tooltip */
+  .tooltip-trigger { position: relative; }
+  .tooltip-trigger:hover::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: #0f172a; color: #e2e8f0; padding: 8px 14px; border-radius: 6px; font-size: 0.8rem;
+    white-space: nowrap; border: 1px solid #334155; z-index: 10;
+  }
+
+  /* Flow steps */
+  .flow-steps { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0; }
+  .flow-step {
+    background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 10px 16px;
+    font-size: 0.85rem; color: #94a3b8; text-align: center; flex: 1; min-width: 100px;
+  }
+  .flow-step .step-num { display: inline-block; width: 22px; height: 22px; line-height: 22px; border-radius: 50%; background: #334155; color: #60a5fa; font-size: 0.75rem; font-weight: 700; margin-right: 6px; }
+  .flow-step.current { border-color: #60a5fa; color: #e2e8f0; }
+  .flow-arrow { color: #475569; font-size: 1.2rem; }
+
+  /* Detail panels */
+  .detail-panel {
+    display: none; margin-top: 12px; padding: 16px; background: #0f172a; border-radius: 8px; border-left: 3px solid #60a5fa;
+  }
+  .detail-panel.open { display: block; animation: fadeIn 0.2s ease; }
+  .detail-panel h5 { color: #f1f5f9; margin-bottom: 8px; }
+  .detail-panel p, .detail-panel li { color: #94a3b8; font-size: 0.85rem; line-height: 1.6; }
+  .detail-panel ul { padding-left: 20px; }
+  .detail-panel code { background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #fbbf24; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Blindsystems</h1>
+  <p>Diagrama interactivo del sistema integral de gestión para fabricación y venta de persianas, cortinas y toldos</p>
+  <div class="badges">
+    <span class="badge laravel">Laravel 8</span>
+    <span class="badge vue">Vue 2 + Vuetify 2</span>
+    <span class="badge mysql">MySQL 8</span>
+    <span class="badge jwt">JWT Auth</span>
+    <span class="badge node">Socket.io</span>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="content">
+  <div class="stats">
+    <div class="stat"><div class="number">119</div><div class="label">Tablas en BD</div></div>
+    <div class="stat"><div class="number">109</div><div class="label">Controladores</div></div>
+    <div class="stat"><div class="number">101</div><div class="label">Modelos</div></div>
+    <div class="stat"><div class="number">40+</div><div class="label">Chunks JS</div></div>
+    <div class="stat"><div class="number">12</div><div class="label">Módulos</div></div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab active" data-tab="arch">Arquitectura</button>
+  <button class="tab" data-tab="auth">Autenticación</button>
+  <button class="tab" data-tab="modules">Módulos</button>
+  <button class="tab" data-tab="flow">Ciclo de Petición</button>
+  <button class="tab" data-tab="db">Base de Datos</button>
+</div>
+
+<div class="content">
+
+<!-- PANEL: Arquitectura -->
+<div class="panel active" id="panel-arch">
+  <div class="diagram-container">
+    <h3>Arquitectura General del Sistema</h3>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-color" style="background:#60a5fa"></div> Cliente (Navegador)</div>
+      <div class="legend-item"><div class="legend-color" style="background:#34d399"></div> Servidor Laravel</div>
+      <div class="legend-item"><div class="legend-color" style="background:#f472b6"></div> Base de Datos</div>
+      <div class="legend-item"><div class="legend-color" style="background:#fbbf24"></div> Integraciones Externas</div>
+    </div>
+    <div class="mermaid">
+flowchart TB
+    subgraph Navegador["Navegador Web"]
+        Vue["Vue 2 SPA"]
+        Vuetify["Vuetify 2 UI"]
+        Vuex["Vuex Store"]
+        Router["Vue Router"]
+    end
+
+    subgraph Laravel["Servidor Laravel 8"]
+        Middleware["Middleware Stack"]
+        Routes["Routes web.php"]
+        Controllers["109 Controladores REST"]
+        Models["101 Modelos Eloquent"]
+    end
+
+    subgraph DB["MySQL 8"]
+        Tables["119 Tablas"]
+    end
+
+    subgraph External["Integraciones"]
+        Firebase["Firebase Auth"]
+        ASPEL["API ASPEL"]
+        Socket["Socket.io"]
+    end
+
+    Navegador -->|HTTP + JSON + JWT| Laravel
+    Laravel --> DB
+    Laravel --> External
+    Navegador -.->|WebSocket| Socket
+</div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">⚡</div>
+      <h4>Frontend SPA</h4>
+      <p>Vue 2 + Vuetify 2. Aplicación de página única con 40+ chunks de componentes cargados bajo demanda.</p>
+      <div class="detail-panel">
+        <ul>
+          <li><strong>app.js</strong> — Núcleo: Vue, Vuex, Vue Router, Vuetify</li>
+          <li><strong>Login.js</strong> — Autenticación (Firebase + JWT)</li>
+          <li><strong>Home.js</strong> — Dashboard principal</li>
+          <li><strong>Users.js, Clients.js, etc.</strong> — Módulos individuales</li>
+          <li><strong>Carga lazy:</strong> Cada chunk se descarga solo cuando se navega a esa sección</li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">⚙️</div>
+      <h4>Backend API</h4>
+      <p>Laravel 8 con 109 controladores REST que manejan toda la lógica de negocio y 101 modelos Eloquent.</p>
+      <div class="detail-panel">
+        <ul>
+          <li><strong>Autenticación:</strong> tymon/jwt-auth con Firebase UID opcional</li>
+          <li><strong>Middleware:</strong> jwt.auth protege rutas internas</li>
+          <li><strong>Exportaciones:</strong> Laravel Excel + FPDF personalizado</li>
+          <li><strong>Logs:</strong> Sistema de logging propio en <code>app/classes/Logs.php</code></li>
+          <li><strong>Notificaciones:</strong> Clase propia <code>SendMail</code> para correos</li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">🗄️</div>
+      <h4>Base de Datos</h4>
+      <p>MySQL 8 con 119 tablas organizadas en catálogos (C_), transacciones (D_) y entidades (E_).</p>
+      <div class="detail-panel">
+        <ul>
+          <li><strong>C_*</strong> — Catálogos base: artículos, modelos, productos, unidades, colores, empresas</li>
+          <li><strong>D_*</strong> — Transacciones: órdenes, cotizaciones, compras, inventario, movimientos</li>
+          <li><strong>E_*</strong> — Entidades: leads, órdenes, cotizaciones, secciones, garantías</li>
+          <li><strong>Usuarios:</strong> c_erp_users + d_erp_access_users (permisos por módulo)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">🔗</div>
+      <h4>Integraciones</h4>
+      <p>Conexión con Firebase Auth, API externa ASPEL (financiero) y Socket.io para tiempo real.</p>
+      <div class="detail-panel">
+        <ul>
+          <li><strong>Firebase:</strong> Login con <code>signInWithEmailAndPassword</code> en producción</li>
+          <li><strong>ASPEL:</strong> API externa para datos financieros (facturación, cartera vencida)</li>
+          <li><strong>Socket.io:</strong> Tiempo real vía Laravel Echo + ws://localhost:3000</li>
+          <li><strong>WebService:</strong> Clase <code>app/classes/WebService.php</code> para datos LB, RT, LS</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: Autenticación -->
+<div class="panel" id="panel-auth">
+  <div class="diagram-container">
+    <h3>Flujo de Autenticación</h3>
+    <div class="mermaid">
+sequenceDiagram
+    actor U as Usuario
+    participant SPA as Vue SPA
+    participant VX as Vuex Store
+    participant API as Laravel API
+    participant DB as MySQL
+    participant FB as Firebase
+
+    Note over U,FB: Login local (desarrollo)
+    U->>SPA: Email + Password
+    SPA->>API: POST /auth/login
+    API->>DB: Buscar usuario
+    API->>API: Verificar bcrypt
+    API->>API: Generar JWT
+    API-->>SPA: token + uid + access
+    SPA->>VX: dispatch auth/login
+
+    Note over U,FB: Login produccion (Firebase)
+    U->>SPA: Email + Password
+    SPA->>FB: signInWithEmailAndPassword
+    FB-->>SPA: Firebase UID
+    SPA->>API: POST /auth/login (uid)
+    API->>DB: CErpUser::where(uid)
+    API->>API: JWTAuth::fromUser()
+    API-->>SPA: token + uid + access
+
+    Note over SPA,API: Peticiones autenticadas
+    SPA->>API: GET/POST con Bearer JWT
+    API->>API: jwt.auth middleware
+    API->>API: parseToken() + authenticate()
+    alt Token valido
+        API-->>SPA: 200 OK
+    else Token expirado
+        API-->>SPA: 401 Unauthorized
+        SPA->>SPA: Redirigir a /login
+    end
+</div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">🔐</div>
+      <h4>JWT (JSON Web Token)</h4>
+      <p>Los tokens JWT tienen validez de 24 horas (TTL = 1440 min). Se almacenan en Vuex y se envían en cada petición.</p>
+      <div class="detail-panel">
+        <ul>
+          <li><strong>Claims:</strong> sub (user id), iat, exp, nbf, jti, prv (proveedor)</li>
+          <li><strong>Algoritmo:</strong> HS256 (HMAC-SHA256)</li>
+          <li><strong>Blacklist:</strong> Activada — tokens invalidados al cerrar sesión</li>
+          <li><strong>Middleware:</strong> <code>jwt.auth</code> en todas las rutas protegidas</li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">👥</div>
+      <h4>Permisos por Módulo</h4>
+      <p>Cada usuario tiene acceso granular a módulos y submódulos del sistema mediante <code>d_erp_access_users</code>.</p>
+      <div class="detail-panel">
+        <ul>
+          <li><strong>Módulos:</strong> Dashboard, Usuarios, Clientes, Cotizaciones, Órdenes, Producción, etc.</li>
+          <li><strong>Submódulos:</strong> Vistas específicas dentro de cada módulo</li>
+          <li><strong>Roles:</strong> is_leader (líder), is_agent (agente)</li>
+          <li><strong>Compañía:</strong> Cada usuario pertenece a una empresa (LS, RT, LB)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: Módulos -->
+<div class="panel" id="panel-modules">
+  <div class="diagram-container">
+    <h3>Mapa de Navegacion del Sistema</h3>
+    <div class="mermaid">
+flowchart LR
+    Login["Login"] --> Home["Home / Dashboard"]
+    Home --> Users["Usuarios"]
+    Home --> Clients["Clientes"]
+    Home --> Quotations["Cotizaciones"]
+    Home --> Orders["Ordenes"]
+    Home --> Prod["Produccion"]
+    Home --> WH["Almacen"]
+    Home --> BI["BI Dashboards"]
+    Home --> Gu["Garantias"]
+
+    Users --> U1["CRUD Usuarios"]
+    Users --> U2["Permisos Modulos"]
+
+    Clients --> C1["Clientes ERP"]
+    Clients --> C2["Leads/Prospectos"]
+    Clients --> C3["Actividades/Agenda"]
+
+    Quotations --> Q1["Crear Cotizacion"]
+    Quotations --> Q2["Catalogo Articulos"]
+    Quotations --> Q3["Iniciar Orden"]
+
+    Orders --> O1["Ordenes Produccion"]
+    Orders --> O2["Solicitudes Material"]
+    Orders --> O3["Envios/Recepciones"]
+
+    Prod --> P1["Secciones"]
+    Prod --> P2["Validar Material"]
+    Prod --> P3["Empaque/Ubicacion"]
+
+    WH --> W1["Productos"]
+    WH --> W2["Movimientos"]
+    WH --> W3["Compras"]
+    WH --> W4["Almacenes"]
+
+    style Login fill:#1e293b,stroke:#60a5fa
+    style Home fill:#1e293b,stroke:#34d399
+</div>
+  </div>
+
+  <div class="module-grid">
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">🏠</div>
+      <h5>Dashboard</h5>
+      <p>Indicadores financieros: LS, RT, LB</p>
+      <div class="detail-panel"><p>Resumen de facturación, cartera vencida, productividad. Datos de API ASPEL externa. Acceso rápido a todos los módulos.</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">👥</div>
+      <h5>Usuarios</h5>
+      <p>Gestión de usuarios ERP</p>
+      <div class="detail-panel"><p>CRUD completo. Asignación de módulos y submódulos por usuario. Control de roles (líder/agente).</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">📋</div>
+      <h5>Clientes</h5>
+      <p>Gestión de clientes y leads</p>
+      <div class="detail-panel"><p>Clientes ERP + Leads/Prospectos. Agenda de actividades. Notas, direcciones, complementos.</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">📄</div>
+      <h5>Cotizaciones</h5>
+      <p>Creación y seguimiento</p>
+      <div class="detail-panel"><p>Catálogo de artículos con precios. Descuentos. Conversión a órdenes. Historial por cliente.</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">📦</div>
+      <h5>Órdenes</h5>
+      <p>Órdenes de producción</p>
+      <div class="detail-panel"><p>Solicitudes de material. Órdenes temporales (QR). Envíos, recepciones, rutas. Etiquetas.</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">🏭</div>
+      <h5>Producción</h5>
+      <p>Secciones y líneas</p>
+      <div class="detail-panel"><p>Gestión de secciones de producción. Validación de materiales. Empaque y ubicación final.</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">🏢</div>
+      <h5>Almacén</h5>
+      <p>Inventario y compras</p>
+      <div class="detail-panel"><p>Productos, categorías, proveedores. Movimientos de entrada/salida/transferencia. Órdenes de compra. Ubicaciones.</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">📊</div>
+      <h5>BI Dashboards</h5>
+      <p>Reportes financieros</p>
+      <div class="detail-panel"><p>9 dashboards: facturación, cartera vencida, productividad, ventas por período. Exportación a Excel.</p></div>
+    </div>
+    <div class="module-card" onclick="toggleDetail(this)">
+      <div class="emoji">🛡️</div>
+      <h5>Garantías</h5>
+      <p>Gestión de garantías</p>
+      <div class="detail-panel"><p>Creación y seguimiento. Tipos de error. Asociación a órdenes. Descarga de detalle.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: Ciclo de Petición -->
+<div class="panel" id="panel-flow">
+  <div class="diagram-container">
+    <h3>Flujo completo: Navegacion -> Transaccion -> Base de Datos</h3>
+    <div class="mermaid">
+flowchart TD
+    subgraph Menu["Menu Lateral (SPA)"]
+        M1["Cotizaciones"] --> M2["Articulos"]
+    end
+
+    subgraph UI["Pantalla Articulos"]
+        A1["Tabla con listado"]
+        A2["Boton + Nuevo"]
+        A3["Formulario campos"]
+    end
+
+    subgraph Front["Peticion HTTP"]
+        F1["fetch() POST"]
+        F2["Authorization: Bearer"]
+        F3["Body: datos articulo"]
+    end
+
+    subgraph Back["Backend Laravel"]
+        B1["Middleware jwt.auth"]
+        B2["CArticleController store()"]
+        B3["new CArticle / save()"]
+    end
+
+    subgraph DB["Base de Datos MySQL"]
+        D1["Tabla: c_articles"]
+        D2["INSERT INTO c_articles"]
+    end
+
+    subgraph Resp["Respuesta"]
+        R1["JSON: success=true"]
+        R2["Recarga de tabla en Vue"]
+    end
+
+    M2 --> A1
+    A1 --> A3
+    A3 --> F1
+    F1 --> F2
+    F2 --> F3
+    F3 --> B1
+    B1 --> B2
+    B2 --> B3
+    B3 --> D1
+    D1 --> D2
+    D2 --> R1
+    R1 --> R2
+
+    style Menu fill:#1e293b,stroke:#60a5fa
+    style UI fill:#1e293b,stroke:#34d399
+    style Front fill:#1e293b,stroke:#fbbf24
+    style Back fill:#1e293b,stroke:#f472b6
+    style DB fill:#1e293b,stroke:#fb923c
+    style Resp fill:#1e293b,stroke:#34d399
+</div>
+  </div>
+
+  <div class="diagram-container">
+    <h3>Ejemplo 2: EDITAR un articulo existente</h3>
+    <div style="background:#1e293b;border-radius:12px;padding:24px;border:1px solid #334155;margin-bottom:24px">
+  <h3 style="color:#94a3b8;font-size:0.85rem;text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Ejemplo 2: EDITAR un articulo existente</h3>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;min-width:140px;text-align:center">
+      <div style="color:#34d399;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px">Pantalla Articulos</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+        <span style="color:#94a3b8;font-size:0.8rem;padding:4px 8px;background:#1e293b;border-radius:4px">Tabla con articulos</span>
+        <span style="color:#94a3b8;font-size:0.8rem;padding:4px 8px;background:#1e293b;border-radius:4px">Click en lapiz de fila</span>
+        <span style="color:#94a3b8;font-size:0.8rem;padding:4px 8px;background:#1e293b;border-radius:4px">Editar datos en dialogo</span>
+        <span style="color:#e2e8f0;font-size:0.8rem;padding:4px 8px;background:#1e293b;border-radius:4px;border:1px solid #34d399">Click Guardar</span>
+      </div>
+    </div>
+    <div style="color:#475569;font-size:1.5rem">→</div>
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;min-width:140px;text-align:center">
+      <div style="color:#fbbf24;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px">Peticion HTTP</div>
+      <div style="margin-top:8px">
+        <span style="color:#94a3b8;font-size:0.8rem;display:block;padding:4px 8px;background:#1e293b;border-radius:4px">POST /cotizacion/updateArticle</span>
+        <span style="color:#94a3b8;font-size:0.8rem;display:block;padding:4px 8px;background:#1e293b;border-radius:4px;margin-top:4px">Body con datos editados</span>
+      </div>
+    </div>
+    <div style="color:#475569;font-size:1.5rem">→</div>
+    <div style="background:#0f172a;border:1px solid #334155;border-radius:8px;padding:10px 14px;min-width:140px;text-align:center">
+      <div style="color:#f472b6;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px">Backend</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:4px">
+        <span style="color:#94a3b8;font-size:0.8rem;padding:4px 8px;background:#1e293b;border-radius:4px">CArticleController update</span>
+        <span style="color:#94a3b8;font-size:0.8rem;padding:4px 8px;background:#1e293b;border-radius:4px">CArticle find by id</span>
+        <span style="color:#94a3b8;font-size:0.8rem;padding:4px 8px;background:#1e293b;border-radius:4px">UPDATE c_articles</span>
+      </div>
+    </div>
+    <div style="color:#475569;font-size:1.5rem">→</div>
+    <div style="background:#0f172a;border:1px solid #34d39944;border-radius:8px;padding:10px 14px;min-width:140px;text-align:center">
+      <div style="color:#34d399;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px">Respuesta</div>
+      <div style="margin-top:8px">
+        <span style="color:#94a3b8;font-size:0.8rem;display:block;padding:4px 8px;background:#1e293b;border-radius:4px">JSON success</span>
+        <span style="color:#94a3b8;font-size:0.8rem;display:block;padding:4px 8px;background:#1e293b;border-radius:4px;margin-top:4px">Vue recarga tabla</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">menu</div>
+      <h4>Ruta de navegacion completa</h4>
+      <p>Desde el login hasta guardar un articulo, el camino que sigue el usuario en la interfaz.</p>
+      <div class="detail-panel">
+        <ol style="color:#94a3b8;font-size:0.85rem;padding-left:20px;">
+          <li><strong>Login</strong> - Ingresa usuario/contraseña</li>
+          <li><strong>Home</strong> - Dashboard principal</li>
+          <li><strong>Menu lateral</strong> - Cotizaciones > Articulos</li>
+          <li><strong>Tabla</strong> - Visualiza todos los articulos activos</li>
+          <li><strong>Nuevo</strong> - Abre formulario en dialogo modal</li>
+          <li><strong>Guardar</strong> - Dispara peticion HTTP al backend</li>
+          <li><strong>Backend</strong> - Valida JWT, procesa, guarda en MySQL</li>
+          <li><strong>Respuesta</strong> - Actualiza tabla automaticamente</li>
+        </ol>
+      </div>
+    </div>
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">db</div>
+      <h4>Donde se guarda? - Tabla c_articles</h4>
+      <p>Estructura completa de la tabla donde se almacenan los articulos.</p>
+      <div class="detail-panel">
+        <table style="width:100%;border-collapse:collapse;font-size:0.8rem;color:#94a3b8">
+          <tr style="border-bottom:1px solid #334155"><th style="text-align:left;padding:6px">Columna</th><th style="text-align:left;padding:6px">Tipo</th><th style="text-align:left;padding:6px">Descripcion</th></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>id</code></td><td style="padding:6px">INT (PK)</td><td style="padding:6px">Identificador unico</td></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>article</code></td><td style="padding:6px">VARCHAR</td><td style="padding:6px">Nombre del articulo</td></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>sku</code></td><td style="padding:6px">VARCHAR</td><td style="padding:6px">Codigo SKU</td></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>model_id</code></td><td style="padding:6px">INT (FK)</td><td style="padding:6px">-> c_models.id</td></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>unit_id</code></td><td style="padding:6px">INT (FK)</td><td style="padding:6px">-> c_units.id</td></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>price</code></td><td style="padding:6px">DECIMAL</td><td style="padding:6px">Precio de venta</td></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>cost</code></td><td style="padding:6px">DECIMAL</td><td style="padding:6px">Costo</td></tr>
+          <tr style="border-bottom:1px solid #1e293b"><td style="padding:6px"><code>is_active</code></td><td style="padding:6px">TINYINT</td><td style="padding:6px">1=activo, 0=eliminado</td></tr>
+          <tr><td style="padding:6px"><code>created_at</code></td><td style="padding:6px">TIMESTAMP</td><td style="padding:6px">Fecha de creacion</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">link</div>
+      <h4>Relaciones con otras tablas</h4>
+      <p>Como se conecta c_articles con el resto del sistema.</p>
+      <div class="detail-panel">
+        <ul>
+          <li><strong>c_articles.model_id</strong> - <code>c_models.id</code> (modelo)</li>
+          <li><strong>c_models.product_id</strong> - <code>c_products.id</code> (categoria)</li>
+          <li><strong>c_articles.unit_id</strong> - <code>c_units.id</code> (unidad)</li>
+          <li><strong>d_quotations.article_id</strong> - <code>c_articles.id</code> (cotizaciones)</li>
+          <li><strong>d_orders.article_id</strong> - <code>c_articles.id</code> (ordenes)</li>
+          <li><strong>d_inventory.article_id</strong> - <code>c_articles.id</code> (inventario)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="info-card" onclick="toggleDetail(this)">
+      <div class="icon">code</div>
+      <h4>Codigo del controlador</h4>
+      <p>El metodo <code>store()</code> en CArticleController.php que procesa la peticion.</p>
+      <div class="detail-panel">
+        <pre style="background:#0f172a;padding:12px;border-radius:6px;font-size:0.75rem;color:#e2e8f0;overflow-x:auto">
+public function store(Request $request)
+{
+    $article = new CArticle();
+    $article->article = $request->article;
+    $article->sku = $request->sku;
+    $article->price = $request->price;
+    $article->cost = $request->cost;
+    $article->unit_id = $request->unit_id;
+    $article->model_id = $request->model_id;
+    $article->is_active = 1;
+    $article->save();
+
+    return response()->json([
+        "success" => true,
+        "message" => "Articulo creado",
+        "data" => $article
+    ], 200);
+}</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL: Base de Datos -->
+<div class="panel" id="panel-db">
+  <div class="diagram-container">
+    <h3>Diagrama Entidad-Relación (Principales)</h3>
+    <div class="diagram-container" style="overflow-x:auto">
+    <h3>Diagrama Entidad-Relación (Principales)</h3>
+    <div style="min-width:900px;padding:10px 0">
+      <style>
+        .er-table { background:#0f172a; border:1px solid #334155; border-radius:8px; margin-bottom:16px; display:inline-block; vertical-align:top; width:260px; margin-right:16px; }
+        .er-table h5 { padding:10px 14px; margin:0; font-size:0.8rem; border-bottom:1px solid #334155; }
+        .er-table .rel-row { padding:6px 14px; font-size:0.75rem; color:#94a3b8; border-bottom:1px solid #1e293b; display:flex; justify-content:space-between; }
+        .er-table .rel-row:last-child { border-bottom:none; }
+        .er-cardinality { color:#60a5fa; font-size:0.7rem; }
+      </style>
+
+      <div style="margin-bottom:24px">
+        <h4 style="color:#60a5fa;font-size:0.8rem;margin-bottom:12px">USUARIOS Y PERMISOS</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="er-table" style="border-color:#60a5fa44"><h5 style="color:#60a5fa">C_ERP_USERS</h5><div class="rel-row"><span>id (PK)</span><span class="er-cardinality">INT</span></div><div class="rel-row"><span>email</span><span class="er-cardinality">VARCHAR</span></div><div class="rel-row"><span>uid_firebase</span><span class="er-cardinality">VARCHAR</span></div></div>
+          <div class="er-table" style="border-color:#60a5fa44"><h5 style="color:#60a5fa">D_ERP_ACCESS_USERS</h5><div class="rel-row"><span>user_id (FK) → C_ERP_USERS</span><span class="er-cardinality">N:1</span></div><div class="rel-row"><span>module_id (FK) → C_ERP_MODULES</span><span class="er-cardinality">N:1</span></div><div class="rel-row"><span>submodule_id (FK) → C_ERP_SUBMODULES</span><span class="er-cardinality">N:1</span></div></div>
+          <div class="er-table" style="border-color:#60a5fa44"><h5 style="color:#60a5fa">C_ERP_INFO_USERS</h5><div class="rel-row"><span>user_id (FK) → C_ERP_USERS</span><span class="er-cardinality">1:1</span></div><div class="rel-row"><span>company_id (FK) → C_COMPANIES</span><span class="er-cardinality">N:1</span></div><div class="rel-row"><span>dept_id (FK) → C_DEPARTMENTS</span><span class="er-cardinality">N:1</span></div></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <h4 style="color:#34d399;font-size:0.8rem;margin-bottom:12px">CATALOGOS</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="er-table" style="border-color:#34d39944"><h5 style="color:#34d399">C_PRODUCTS</h5><div class="rel-row"><span>id (PK)</span><span class="er-cardinality">INT</span></div><div class="rel-row"><span>→ C_MODELS.product_id</span><span class="er-cardinality">1:N</span></div></div>
+          <div class="er-table" style="border-color:#34d39944"><h5 style="color:#34d399">C_MODELS</h5><div class="rel-row"><span>id (PK)</span><span class="er-cardinality">INT</span></div><div class="rel-row"><span>product_id (FK) → C_PRODUCTS</span><span class="er-cardinality">N:1</span></div><div class="rel-row"><span>→ C_ARTICLES.model_id</span><span class="er-cardinality">1:N</span></div></div>
+          <div class="er-table" style="border-color:#34d39944"><h5 style="color:#34d399">C_ARTICLES</h5><div class="rel-row"><span>id (PK)</span><span class="er-cardinality">INT</span></div><div class="rel-row"><span>model_id (FK) → C_MODELS</span><span class="er-cardinality">N:1</span></div><div class="rel-row"><span>unit_id (FK) → C_UNITS</span><span class="er-cardinality">N:1</span></div></div>
+          <div class="er-table" style="border-color:#34d39944"><h5 style="color:#34d399">C_UNITS</h5><div class="rel-row"><span>id (PK)</span><span class="er-cardinality">INT</span></div><div class="rel-row"><span>→ C_ARTICLES.unit_id</span><span class="er-cardinality">1:N</span></div></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <h4 style="color:#fbbf24;font-size:0.8rem;margin-bottom:12px">TRANSACCIONES</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="er-table" style="border-color:#fbbf2444"><h5 style="color:#fbbf24">E_QUOTATIONS</h5><div class="rel-row"><span>→ D_QUOTATIONS</span><span class="er-cardinality">1:N</span></div><div class="rel-row"><span>→ D_QUOTATION_DISCOUNTS</span><span class="er-cardinality">1:N</span></div><div class="rel-row"><span>user_id (FK) → C_ERP_USERS</span><span class="er-cardinality">N:1</span></div><div class="rel-row"><span>client_id (FK) → C_USERS</span><span class="er-cardinality">N:1</span></div></div>
+          <div class="er-table" style="border-color:#fbbf2444"><h5 style="color:#fbbf24">E_ORDERS</h5><div class="rel-row"><span>→ D_ORDERS</span><span class="er-cardinality">1:N</span></div><div class="rel-row"><span>→ E_SECTIONS</span><span class="er-cardinality">1:N</span></div></div>
+          <div class="er-table" style="border-color:#fbbf2444"><h5 style="color:#fbbf24">D_INVENTORY</h5><div class="rel-row"><span>product_id (FK) → C_INVENTORY_PRODUCTS</span><span class="er-cardinality">N:1</span></div></div>
+          <div class="er-table" style="border-color:#fbbf2444"><h5 style="color:#fbbf24">D_MOVEMENTS</h5><div class="rel-row"><span>movement_id (FK) → E_MOVEMENTS</span><span class="er-cardinality">N:1</span></div></div>
+          <div class="er-table" style="border-color:#fbbf2444"><h5 style="color:#fbbf24">D_PURCHASES</h5><div class="rel-row"><span>purchase_id (FK) → E_PURCHASES</span><span class="er-cardinality">N:1</span></div></div>
+          <div class="er-table" style="border-color:#fbbf2444"><h5 style="color:#fbbf24">C_WAREHOUSES</h5><div class="rel-row"><span>→ D_WAREHOUSE_LOCATIONS</span><span class="er-cardinality">1:N</span></div></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:24px">
+        <h4 style="color:#f472b6;font-size:0.8rem;margin-bottom:12px">ENTIDADES DE NEGOCIO</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="er-table" style="border-color:#f472b644"><h5 style="color:#f472b6">C_USERS (Clientes)</h5><div class="rel-row"><span>→ E_QUOTATIONS</span><span class="er-cardinality">1:N</span></div><div class="rel-row"><span>→ E_LEADS</span><span class="er-cardinality">1:N</span></div></div>
+          <div class="er-table" style="border-color:#f472b644"><h5 style="color:#f472b6">C_COMPANIES</h5><div class="rel-row"><span>→ C_ERP_INFO_USERS</span><span class="er-cardinality">1:N</span></div></div>
+          <div class="er-table" style="border-color:#f472b644"><h5 style="color:#f472b6">C_DEPARTMENTS</h5><div class="rel-row"><span>→ C_ERP_INFO_USERS</span><span class="er-cardinality">1:N</span></div></div>
+        </div>
+      </div>
+    </div>
+</div>
+  </div>
+
+  <div class="info-grid">
+    <div class="info-card" style="cursor:default">
+      <div class="icon">📁</div>
+      <h4>Catálogos (C_*)</h4>
+      <p>Datos base del sistema: artículos, modelos, productos, colores, empresas, departamentos, unidades, proveedores.</p>
+    </div>
+    <div class="info-card" style="cursor:default">
+      <div class="icon">📋</div>
+      <h4>Transacciones (D_*)</h4>
+      <p>Datos transaccionales: órdenes, cotizaciones, compras, inventario, movimientos, garantías.</p>
+    </div>
+    <div class="info-card" style="cursor:default">
+      <div class="icon">📌</div>
+      <h4>Entidades (E_*)</h4>
+      <p>Entidades de negocio: leads, órdenes, cotizaciones, secciones, garantías, notificaciones.</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+
+<script>
+mermaid.initialize({
+  theme: 'dark',
+  themeVariables: {
+    fontFamily: 'Segoe UI, system-ui, sans-serif',
+    fontSize: '14px',
+    primaryColor: '#1e293b',
+    primaryTextColor: '#e2e8f0',
+    primaryBorderColor: '#334155',
+    lineColor: '#475569',
+    secondaryColor: '#0f172a',
+    tertiaryColor: '#1e293b',
+    clusterBkg: '#0f172a',
+    clusterBorder: '#334155',
+    edgeLabelBackground: '#1e293b',
+    nodeBorder: '#334155',
+  },
+  securityLevel: 'loose',
+  startOnLoad: true,
+});
+
+// Tab switching
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+function toggleDetail(card) {
+  const panel = card.querySelector('.detail-panel');
+  if (panel) {
+    panel.classList.toggle('open');
+  }
+}
+</script>
+</body>
+</html>
