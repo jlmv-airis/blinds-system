@@ -7,7 +7,7 @@ Se está migrando a la nube una plataforma local de venta de cortinas/persianas.
 - **Empresa anterior:** Lanson — dueña original del sistema.
 - **Empresa actual:** Blindsystem — heredó el sistema; solo se adaptaron los servicios existentes de Lanson para operar bajo la nueva marca (branding, datos, posiblemente dominios/credenciales), sin un rediseño completo.
 - **Destino de despliegue:** Neubox.
-- **Repositorio de trabajo:** este repo (`~/Documents/GitHub/blinds-system`), destinado a subirse a GitHub.
+- **Repositorio de trabajo:** este repo (`~/Documents/GitHub/blinds-system`), en GitHub como [`jlmv-airis/blinds-system`](https://github.com/jlmv-airis/blinds-system) (privado).
 - **Rol del usuario:** developer, dueño técnico de la migración.
 
 ## Estado actual (2026-08-25)
